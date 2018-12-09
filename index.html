@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f2f2f2;
+
+        }
+
+        .messages {
+            height: 80vh;
+            width: 100vw;
+            display: table-cell;
+            vertical-align: bottom;
+        }
+
+        .message {
+            background: #1420c9;
+            color: #fff;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        .messageByMe {
+            background: #1ac914;
+            color: #fff;
+            padding: 10px;
+            margin: 10px;
+            text-align: right;
+           
+        }
+
+        .inputs {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+        }
+    </style>
+    <title>Group Chat demo</title>
+</head>
+
+<body>
+
+   
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="messages">
+                   
+
+                </div>
+            </div>
+            <div class="inputs">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="inputMsg">
+                    </div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" id="sendMessage">Send Message</button>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="./socket.io/socket.io.js"></script>
+    <script>
+        var urlParams = new URLSearchParams(location.search);
+        var color = urlParams.get('color'); 
+
+        var socket = io('http://localhost:8001', { query: `userDetails=${color}` });
+        socket.on('connect', function () {
+            console.log("Connected");
+        });
+        socket.on("NewUserConnected", function() {
+            console.log("New User connected");
+        });
+
+        socket.on("NewMessage", function(incomingMessage) {
+            console.log(incomingMessage);
+            $(".messages").append(`
+            <div class="row>
+                <div class="message" style="background:${incomingMessage.color}">
+                    ${incomingMessage.val}    
+                </div>
+            </div>
+            `)
+        })
+
+        $('#sendMessage').click(function() {
+            var msg = $("#inputMsg").val();
+            socket.emit("sendMessage", {val: msg, color: color});
+            $(".messages").append(`
+            <div class="row>
+                <div class="messageByMe" style="background:${color}">
+                    ${msg}    
+                </div>
+            </div>
+            `)
+            $("#inputMsg").val("");
+        })
+    </script>
+</body>
+
+</html>
